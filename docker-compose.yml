@@ -46,13 +46,11 @@ services:
     container_name: itcenter-backend
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_NAME=itcenter_auth
-      - DB_USERNAME=itcenter
-      - DB_PASSWORD=password
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/itcenter_auth
+      - SPRING_DATASOURCE_USERNAME=itcenter
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
     ports:
       - "8080:8080"
     depends_on:
@@ -65,7 +63,7 @@ services:
     volumes:
       - ./backend/logs:/app/logs
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/healthz"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/health"]
       interval: 30s
       timeout: 10s
       retries: 3

@@ -1,5 +1,5 @@
 # Backend Dockerfile
-FROM openjdk:25-jdk-slim
+FROM eclipse-temurin:21-jdk-alpine
 
 # Set working directory
 WORKDIR /app

@@ -29,7 +29,7 @@ public class LoginAudit {
     @Column(name = "event_type", nullable = false)
     private String eventType;
     
-    @Column(name = "ip_address")
+    @Column(name = "ip_address", columnDefinition = "inet")
     private String ipAddress;
     
     @Column(name = "user_agent")

@@ -69,9 +69,9 @@ public class AuditService {
         Page<LoginAudit> audits;
         
         if (userId != null && eventType != null) {
-            audits = auditRepository.findByUserIdAndEventTypeOrderByCreatedAtDesc(userId, eventType, pageable);
+            audits = auditRepository.findByUser_UserIdAndEventTypeOrderByCreatedAtDesc(userId, eventType, pageable);
         } else if (userId != null) {
-            audits = auditRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
+            audits = auditRepository.findByUser_UserIdOrderByCreatedAtDesc(userId, pageable);
         } else if (eventType != null) {
             audits = auditRepository.findByEventTypeOrderByCreatedAtDesc(eventType, pageable);
         } else if (startDate != null && endDate != null) {
@@ -93,7 +93,7 @@ public class AuditService {
      */
     @Transactional(readOnly = true)
     public PageResponseDto<AuditLogDto> getUserAuditLogs(String userId, Pageable pageable) {
-        Page<LoginAudit> audits = auditRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
+        Page<LoginAudit> audits = auditRepository.findByUser_UserIdOrderByCreatedAtDesc(userId, pageable);
         
         List<AuditLogDto> auditDtos = audits.getContent().stream()
             .map(userMapper::toAuditLogDto)

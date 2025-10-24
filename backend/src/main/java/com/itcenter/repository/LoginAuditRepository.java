@@ -19,7 +19,7 @@ public interface LoginAuditRepository extends JpaRepository<LoginAudit, Long> {
     /**
      * Find audit logs by user ID with pagination
      */
-    Page<LoginAudit> findByUserIdOrderByCreatedAtDesc(String userId, Pageable pageable);
+    Page<LoginAudit> findByUser_UserIdOrderByCreatedAtDesc(String userId, Pageable pageable);
     
     /**
      * Find audit logs by event type with pagination
@@ -29,7 +29,7 @@ public interface LoginAuditRepository extends JpaRepository<LoginAudit, Long> {
     /**
      * Find audit logs by user ID and event type with pagination
      */
-    Page<LoginAudit> findByUserIdAndEventTypeOrderByCreatedAtDesc(
+    Page<LoginAudit> findByUser_UserIdAndEventTypeOrderByCreatedAtDesc(
         String userId, String eventType, Pageable pageable);
     
     /**
