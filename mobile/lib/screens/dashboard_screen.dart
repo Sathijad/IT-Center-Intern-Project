@@ -66,7 +66,7 @@ class DashboardScreen extends StatelessWidget {
                     StatsCard(
                       title: 'Profile Complete',
                       value: '100%',
-                      icon: Icons.person_check,
+                      icon: Icons.check_circle,
                       color: Colors.green,
                     ),
                     StatsCard(

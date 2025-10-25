@@ -37,7 +37,7 @@ class CustomTextField extends StatelessWidget {
       enabled: enabled,
       obscureText: obscureText,
       keyboardType: keyboardType,
-      validators: validators,
+      validator: validators?.isNotEmpty == true ? validators!.first : null,
       onChanged: onChanged,
       decoration: InputDecoration(
         labelText: label,

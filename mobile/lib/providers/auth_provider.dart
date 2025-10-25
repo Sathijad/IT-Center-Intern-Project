@@ -9,43 +9,62 @@ import '../models/user.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 
-class AuthProvider extends ChangeNotifier {
+class AuthState {
+  final User? user;
+  final bool isLoading;
+  final bool isAuthenticated;
+  final bool needsMfa;
+  final String? error;
+
+  AuthState({
+    this.user,
+    this.isLoading = false,
+    this.isAuthenticated = false,
+    this.needsMfa = false,
+    this.error,
+  });
+
+  AuthState copyWith({
+    User? user,
+    bool? isLoading,
+    bool? isAuthenticated,
+    bool? needsMfa,
+    String? error,
+  }) {
+    return AuthState(
+      user: user ?? this.user,
+      isLoading: isLoading ?? this.isLoading,
+      isAuthenticated: isAuthenticated ?? this.isAuthenticated,
+      needsMfa: needsMfa ?? this.needsMfa,
+      error: error ?? this.error,
+    );
+  }
+}
+
+class AuthNotifier extends StateNotifier<AuthState> {
   final AuthService _authService = AuthService();
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
-  
-  User? _user;
-  bool _isLoading = false;
-  bool _isAuthenticated = false;
-  bool _needsMfa = false;
-  String? _error;
 
-  User? get user => _user;
-  bool get isLoading => _isLoading;
-  bool get isAuthenticated => _isAuthenticated;
-  bool get needsMfa => _needsMfa;
-  String? get error => _error;
-
-  AuthProvider() {
+  AuthNotifier() : super(AuthState()) {
     _initializeAuth();
   }
 
   Future<void> _initializeAuth() async {
-    _setLoading(true);
+    state = state.copyWith(isLoading: true);
     try {
       final token = await _storage.read(key: 'auth_token');
       if (token != null) {
         await _validateToken(token);
       }
     } catch (e) {
-      _setError('Failed to initialize authentication: $e');
+      state = state.copyWith(error: 'Failed to initialize authentication: $e');
     } finally {
-      _setLoading(false);
+      state = state.copyWith(isLoading: false);
     }
   }
 
   Future<bool> login(String email, String password) async {
-    _setLoading(true);
-    _clearError();
+    state = state.copyWith(isLoading: true, error: null);
     
     try {
       final result = await _authService.login(email, password);
@@ -55,28 +74,26 @@ class AuthProvider extends ChangeNotifier {
         await _storage.write(key: 'auth_token', value: token);
         
         if (result['needsMfa'] == true) {
-          _needsMfa = true;
-          _isAuthenticated = false;
+          state = state.copyWith(needsMfa: true, isAuthenticated: false);
         } else {
           await _validateToken(token);
         }
         
         return true;
       } else {
-        _setError(result['message'] ?? 'Login failed');
+        state = state.copyWith(error: result['message'] ?? 'Login failed');
         return false;
       }
     } catch (e) {
-      _setError('Login failed: $e');
+      state = state.copyWith(error: 'Login failed: $e');
       return false;
     } finally {
-      _setLoading(false);
+      state = state.copyWith(isLoading: false);
     }
   }
 
   Future<bool> register(String email, String password, String displayName) async {
-    _setLoading(true);
-    _clearError();
+    state = state.copyWith(isLoading: true, error: null);
     
     try {
       final result = await _authService.register(email, password, displayName);
@@ -84,20 +101,19 @@ class AuthProvider extends ChangeNotifier {
       if (result['success'] == true) {
         return true;
       } else {
-        _setError(result['message'] ?? 'Registration failed');
+        state = state.copyWith(error: result['message'] ?? 'Registration failed');
         return false;
       }
     } catch (e) {
-      _setError('Registration failed: $e');
+      state = state.copyWith(error: 'Registration failed: $e');
       return false;
     } finally {
-      _setLoading(false);
+      state = state.copyWith(isLoading: false);
     }
   }
 
   Future<bool> verifyMfa(String code) async {
-    _setLoading(true);
-    _clearError();
+    state = state.copyWith(isLoading: true, error: null);
     
     try {
       final result = await _authService.verifyMfa(code);
@@ -106,23 +122,22 @@ class AuthProvider extends ChangeNotifier {
         final token = result['token'];
         await _storage.write(key: 'auth_token', value: token);
         await _validateToken(token);
-        _needsMfa = false;
+        state = state.copyWith(needsMfa: false);
         return true;
       } else {
-        _setError(result['message'] ?? 'MFA verification failed');
+        state = state.copyWith(error: result['message'] ?? 'MFA verification failed');
         return false;
       }
     } catch (e) {
-      _setError('MFA verification failed: $e');
+      state = state.copyWith(error: 'MFA verification failed: $e');
       return false;
     } finally {
-      _setLoading(false);
+      state = state.copyWith(isLoading: false);
     }
   }
 
   Future<bool> forgotPassword(String email) async {
-    _setLoading(true);
-    _clearError();
+    state = state.copyWith(isLoading: true, error: null);
     
     try {
       final result = await _authService.forgotPassword(email);
@@ -130,19 +145,19 @@ class AuthProvider extends ChangeNotifier {
       if (result['success'] == true) {
         return true;
       } else {
-        _setError(result['message'] ?? 'Password reset failed');
+        state = state.copyWith(error: result['message'] ?? 'Password reset failed');
         return false;
       }
     } catch (e) {
-      _setError('Password reset failed: $e');
+      state = state.copyWith(error: 'Password reset failed: $e');
       return false;
     } finally {
-      _setLoading(false);
+      state = state.copyWith(isLoading: false);
     }
   }
 
   Future<void> logout() async {
-    _setLoading(true);
+    state = state.copyWith(isLoading: true);
     
     try {
       await _authService.logout();
@@ -150,59 +165,50 @@ class AuthProvider extends ChangeNotifier {
       // Ignore logout errors
     } finally {
       await _storage.delete(key: 'auth_token');
-      _user = null;
-      _isAuthenticated = false;
-      _needsMfa = false;
-      _clearError();
-      _setLoading(false);
+      state = AuthState(); // Reset to initial state
     }
   }
 
   Future<void> _validateToken(String token) async {
     try {
       final userData = await ApiService.getUserProfile(token);
-      _user = User.fromJson(userData);
-      _isAuthenticated = true;
-      _needsMfa = false;
+      final user = User.fromJson(userData);
+      state = state.copyWith(
+        user: user,
+        isAuthenticated: true,
+        needsMfa: false,
+        error: null,
+      );
     } catch (e) {
       await _storage.delete(key: 'auth_token');
-      _isAuthenticated = false;
-      _setError('Token validation failed: $e');
+      state = state.copyWith(
+        isAuthenticated: false,
+        error: 'Token validation failed: $e',
+      );
     }
   }
 
   Future<void> updateProfile(Map<String, dynamic> data) async {
-    if (!_isAuthenticated || _user == null) return;
+    if (!state.isAuthenticated || state.user == null) return;
     
-    _setLoading(true);
-    _clearError();
+    state = state.copyWith(isLoading: true, error: null);
     
     try {
       final token = await _storage.read(key: 'auth_token');
       if (token == null) throw Exception('No authentication token');
       
       final updatedUserData = await ApiService.updateUserProfile(token, data);
-      _user = User.fromJson(updatedUserData);
-      notifyListeners();
+      final user = User.fromJson(updatedUserData);
+      state = state.copyWith(user: user);
     } catch (e) {
-      _setError('Profile update failed: $e');
+      state = state.copyWith(error: 'Profile update failed: $e');
     } finally {
-      _setLoading(false);
+      state = state.copyWith(isLoading: false);
     }
   }
-
-  void _setLoading(bool loading) {
-    _isLoading = loading;
-    notifyListeners();
-  }
-
-  void _setError(String error) {
-    _error = error;
-    notifyListeners();
-  }
-
-  void _clearError() {
-    _error = null;
-    notifyListeners();
-  }
 }
+
+// Create the provider
+final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
+  return AuthNotifier();
+});

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -8,14 +8,14 @@ import '../providers/auth_provider.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/loading_button.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormBuilderState>();
   bool _obscurePassword = true;
 
@@ -107,11 +107,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 24),
                 
                 // Login Button
-                Consumer<AuthProvider>(
-                  builder: (context, authProvider, child) {
+                Consumer(
+                  builder: (context, ref, child) {
+                    final authState = ref.watch(authProvider);
                     return LoadingButton(
                       text: 'Sign In',
-                      isLoading: authProvider.isLoading,
+                      isLoading: authState.isLoading,
                       onPressed: _handleLogin,
                     );
                   },
@@ -120,9 +121,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 16),
                 
                 // Error Message
-                Consumer<AuthProvider>(
-                  builder: (context, authProvider, child) {
-                    if (authProvider.error != null) {
+                Consumer(
+                  builder: (context, ref, child) {
+                    final authState = ref.watch(authProvider);
+                    if (authState.error != null) {
                       return Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
@@ -136,7 +138,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                authProvider.error!,
+                                authState.error!,
                                 style: TextStyle(color: Colors.red[600]),
                               ),
                             ),
@@ -208,15 +210,16 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleLogin() async {
     if (_formKey.currentState?.saveAndValidate() ?? false) {
       final formData = _formKey.currentState!.value;
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final authNotifier = ref.read(authProvider.notifier);
       
-      final success = await authProvider.login(
+      final success = await authNotifier.login(
         formData['email'],
         formData['password'],
       );
       
       if (success && mounted) {
-        if (authProvider.needsMfa) {
+        final authState = ref.read(authProvider);
+        if (authState.needsMfa) {
           context.go('/mfa');
         } else {
           context.go('/dashboard');
