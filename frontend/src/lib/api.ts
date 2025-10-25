@@ -2,7 +2,7 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 
 // Create axios instance
 export const api: AxiosInstance = axios.create({
-  baseURL: '/api/v1',
+  baseURL: 'http://localhost:8082/api/v1',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -29,10 +29,12 @@ api.interceptors.response.use(
     return response
   },
   (error) => {
+    console.error('API Interceptor: Request failed:', error.response?.status, error.response?.data)
     if (error.response?.status === 401) {
-      // Token expired or invalid
-      localStorage.removeItem('auth_token')
-      window.location.href = '/login'
+      console.log('API Interceptor: 401 error detected, but not redirecting to avoid loops')
+      // Temporarily disabled to prevent redirect loops
+      // localStorage.removeItem('auth_token')
+      // window.location.href = '/login'
     }
     return Promise.reject(error)
   }

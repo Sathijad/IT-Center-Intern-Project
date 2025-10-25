@@ -40,6 +40,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(authz -> authz
                 // Public endpoints
                 .requestMatchers("/healthz", "/actuator/health", "/swagger-ui/**", "/api-docs/**").permitAll()
+                // Authentication endpoints
+                .requestMatchers("/auth/**").permitAll()
                 // Admin endpoints
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 // User endpoints

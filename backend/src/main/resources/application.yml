@@ -53,25 +53,46 @@ spring:
     validate-on-migrate: true
 
   
+  # # Security Configuration
+  # security:
+  #   oauth2:
+  #     resourceserver:
+  #       jwt:
+  #         issuer-uri: ${COGNITO_ISSUER_URI:https://cognito-idp.us-east-1.amazonaws.com/us-east-1_XXXXXXXXX}
+  #         jwk-set-uri: ${COGNITO_JWK_SET_URI:https://cognito-idp.us-east-1.amazonaws.com/us-east-1_XXXXXXXXX/.well-known/jwks.json}
+
   # Security Configuration
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${COGNITO_ISSUER_URI:https://cognito-idp.us-east-1.amazonaws.com/us-east-1_XXXXXXXXX}
-          jwk-set-uri: ${COGNITO_JWK_SET_URI:https://cognito-idp.us-east-1.amazonaws.com/us-east-1_XXXXXXXXX/.well-known/jwks.json}
+          issuer-uri: ${COGNITO_ISSUER_URI:https://cognito-idp.ap-southeast-2.amazonaws.com/ap-southeast-2_UW7Y1ro4I}
+          jwk-set-uri: ${COGNITO_JWK_SET_URI:https://cognito-idp.ap-southeast-2.amazonaws.com/ap-southeast-2_UW7Y1ro4I/.well-known/jwks.json}
+
+# # AWS Configuration
+# aws:
+#   region: ${AWS_REGION:us-east-1}
+#   cognito:
+#     user-pool-id: ${COGNITO_USER_POOL_ID:us-east-1_XXXXXXXXX}
+#     client-id: ${COGNITO_CLIENT_ID:xxxxxxxxxxxxxxxxxxxxxxxxxx}
+#     client-secret: ${COGNITO_CLIENT_SECRET:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx}
+#   ses:
+#     from-email: ${SES_FROM_EMAIL:noreply@itcenter.com}
+#   sns:
+#     topic-arn: ${SNS_TOPIC_ARN:arn:aws:sns:us-east-1:123456789012:itcenter-notifications}
 
 # AWS Configuration
 aws:
-  region: ${AWS_REGION:us-east-1}
+  region: ${AWS_REGION:ap-southeast-2}
   cognito:
-    user-pool-id: ${COGNITO_USER_POOL_ID:us-east-1_XXXXXXXXX}
-    client-id: ${COGNITO_CLIENT_ID:xxxxxxxxxxxxxxxxxxxxxxxxxx}
-    client-secret: ${COGNITO_CLIENT_SECRET:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx}
+    user-pool-id: ${COGNITO_USER_POOL_ID:ap-southeast-2_UW7Y1ro4I}
+    client-id: ${COGNITO_CLIENT_ID:42tvdcjmmun7jkir6p317efgsh}
+    client-secret: ${COGNITO_CLIENT_SECRET:dtgmtb11pumapjeeqivn36m2mfc39c3j87cltthp0eg5102bhmj}
   ses:
     from-email: ${SES_FROM_EMAIL:noreply@itcenter.com}
   sns:
-    topic-arn: ${SNS_TOPIC_ARN:arn:aws:sns:us-east-1:123456789012:itcenter-notifications}
+    topic-arn: ${SNS_TOPIC_ARN:arn:aws:sns:ap-southeast-2:123456789012:itcenter-notifications}
+
 
 # Logging Configuration
 logging:

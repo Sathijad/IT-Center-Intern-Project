@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { useQuery, useQueryClient } from 'react-query'
 import { api } from '../lib/api'
 import { UserProfile } from '../types/auth'
+import { getCognitoLogoutUrl } from '../lib/cognito'
 
 interface AuthContextType {
   user: UserProfile | null
@@ -29,10 +30,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     () => api.get<UserProfile>('/me').then(res => res.data),
     {
       enabled: !!token,
-      retry: false,
+      retry: 2, // Retry twice
+      retryDelay: 1000, // Wait 1 second before retry
       onError: (error: any) => {
+        console.error('AuthContext: User profile fetch failed:', error)
+        // Only logout on persistent 401 errors
         if (error?.response?.status === 401) {
-          logout()
+          console.log('AuthContext: 401 error detected')
         }
       }
     }
@@ -48,10 +52,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setToken(null)
     localStorage.removeItem('auth_token')
     queryClient.clear()
+    
     // Call logout endpoint to revoke token
     api.post('/sessions/logout').catch(() => {
       // Ignore errors on logout
     })
+    
+    // Redirect to Cognito logout
+    const redirectUri = `${window.location.origin}/login`
+    const logoutUrl = getCognitoLogoutUrl(redirectUri)
+    window.location.href = logoutUrl
   }
 
   const refreshUser = () => {
@@ -62,7 +72,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return user?.roles?.includes(role) ?? false
   }
 
-  const isAuthenticated = !!token && !!user && !error
+  const isAuthenticated = !!token && (!!user || isLoading)
 
   const value: AuthContextType = {
     user: user ?? null,

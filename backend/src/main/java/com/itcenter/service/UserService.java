@@ -59,10 +59,52 @@ public class UserService {
     public UserProfileDto getCurrentUserProfile() {
         String userId = getCurrentUserId();
         AppUser user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+            .orElseGet(() -> createUserFromCognito(userId));
         
         logger.info("Retrieved profile for user: {}", userId);
         return userMapper.toUserProfileDto(user);
+    }
+    
+    /**
+     * Create user record from Cognito JWT token
+     */
+    @Transactional
+    private AppUser createUserFromCognito(String userId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (!(authentication.getPrincipal() instanceof org.springframework.security.oauth2.jwt.Jwt)) {
+            throw new RuntimeException("Unable to extract user information from JWT");
+        }
+        
+        org.springframework.security.oauth2.jwt.Jwt jwt = (org.springframework.security.oauth2.jwt.Jwt) authentication.getPrincipal();
+        
+        // Extract user information from JWT
+        String email = jwt.getClaimAsString("email");
+        String displayName = jwt.getClaimAsString("name");
+        if (displayName == null || displayName.trim().isEmpty()) {
+            displayName = email != null ? email.split("@")[0] : "User";
+        }
+        
+        // Create new user
+        AppUser user = new AppUser();
+        user.setUserId(userId);
+        user.setEmail(email != null ? email : userId + "@cognito.local");
+        user.setDisplayName(displayName);
+        user.setLocale("en-US");
+        
+        // Assign default role (STAFF)
+        Role staffRole = roleRepository.findByName("STAFF")
+            .orElseThrow(() -> new RuntimeException("STAFF role not found"));
+        user.addRole(staffRole);
+        
+        AppUser savedUser = userRepository.save(user);
+        
+        // Log user creation
+        // auditService.logEvent(userId, LoginAudit.EventType.LOGIN, 
+        //     getClientIpAddress(), getCurrentUserAgent(), true, 
+        //     "User created from Cognito authentication");
+        
+        logger.info("Created new user from Cognito: {}", userId);
+        return savedUser;
     }
     
     /**

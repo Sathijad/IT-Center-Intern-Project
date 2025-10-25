@@ -1,12 +1,19 @@
 import React from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { getCognitoLoginUrl } from '../lib/cognito'
 
 export function LoginPage() {
   const { isAuthenticated } = useAuth()
 
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />
+  }
+
+  const handleLogin = () => {
+    const redirectUri = `${window.location.origin}/auth/callback`
+    const loginUrl = getCognitoLoginUrl(redirectUri)
+    window.location.href = loginUrl
   }
 
   return (
@@ -29,10 +36,7 @@ export function LoginPage() {
             </p>
             <button 
               className="w-full bg-primary text-primary-foreground py-2 px-4 rounded-md hover:bg-primary/90 transition-colors"
-              onClick={() => {
-                // In a real implementation, this would redirect to Cognito Hosted UI
-                window.location.href = '/api/v1/auth/login'
-              }}
+              onClick={handleLogin}
             >
               Sign In with Cognito
             </button>
