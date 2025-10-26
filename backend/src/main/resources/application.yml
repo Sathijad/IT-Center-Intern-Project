@@ -66,8 +66,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${COGNITO_ISSUER_URI:https://cognito-idp.ap-southeast-2.amazonaws.com/ap-southeast-2_UW7Y1ro4I}
-          jwk-set-uri: ${COGNITO_JWK_SET_URI:https://cognito-idp.ap-southeast-2.amazonaws.com/ap-southeast-2_UW7Y1ro4I/.well-known/jwks.json}
+          issuer-uri: ${COGNITO_ISSUER_URI:https://cognito-idp.ap-southeast-2.amazonaws.com/ap-southeast-2_hTAYJId8y}
+          jwk-set-uri: ${COGNITO_JWK_SET_URI:https://cognito-idp.ap-southeast-2.amazonaws.com/ap-southeast-2_hTAYJId8y/.well-known/jwks.json}
 
 # # AWS Configuration
 # aws:
@@ -85,9 +85,8 @@ spring:
 aws:
   region: ${AWS_REGION:ap-southeast-2}
   cognito:
-    user-pool-id: ${COGNITO_USER_POOL_ID:ap-southeast-2_UW7Y1ro4I}
-    client-id: ${COGNITO_CLIENT_ID:42tvdcjmmun7jkir6p317efgsh}
-    client-secret: ${COGNITO_CLIENT_SECRET:dtgmtb11pumapjeeqivn36m2mfc39c3j87cltthp0eg5102bhmj}
+    user-pool-id: ${COGNITO_USER_POOL_ID:ap-southeast-2_hTAYJId8y}
+    client-id: ${COGNITO_CLIENT_ID:3rdnl5ind8guti89jrbob85r4i}
   ses:
     from-email: ${SES_FROM_EMAIL:noreply@itcenter.com}
   sns:

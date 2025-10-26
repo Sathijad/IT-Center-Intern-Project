@@ -24,8 +24,8 @@ public class AuthService {
     @Value("${aws.cognito.client-id}")
     private String clientId;
     
-    @Value("${aws.cognito.client-secret}")
-    private String clientSecret;
+    @Value("${aws.cognito.client-secret:}")
+    private String clientSecret; // empty if not set
     
     private final RestTemplate restTemplate = new RestTemplate();
     

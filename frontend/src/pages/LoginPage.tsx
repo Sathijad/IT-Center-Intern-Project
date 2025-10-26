@@ -12,8 +12,9 @@ export function LoginPage() {
 
   const handleLogin = () => {
     const redirectUri = `${window.location.origin}/auth/callback`
-    const loginUrl = getCognitoLoginUrl(redirectUri)
-    window.location.href = loginUrl
+    getCognitoLoginUrl(redirectUri).then((loginUrl) => {
+      window.location.href = loginUrl
+    })
   }
 
   return (
